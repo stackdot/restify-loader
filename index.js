@@ -14,7 +14,7 @@ class _AppEmitter extends EventEmitter {}
 const AppEmitter = new _AppEmitter()
 
 
-module.exports = function( options = {} ){
+module.exports = function( options = {}, routeParams = {} ){
 
 	console.log('options', options)
 
@@ -105,7 +105,7 @@ module.exports = function( options = {} ){
 	server.LoadedRoutes = {};
 	lodash.map( Routes, function( route, name ){
 		debug(`Registering Route: ${name}`)
-		server.LoadedRoutes[ name ] = new route( name, server, AppEmitter, ravenClient, Libs )
+		server.LoadedRoutes[ name ] = new route( name, server, AppEmitter, ravenClient, Libs, routeParams )
 	});
 
 
