@@ -5,7 +5,7 @@ const EventEmitter = require('events');
 
 module.exports = class RESTroute extends EventEmitter {
 
-	constructor(name, server, events, raven, libs, routeParams) {
+	constructor(name, server, events, raven, libs = {}, routeParams = {}) {
 
 		// Extend the EventEmitter:
 		super();
@@ -17,9 +17,10 @@ module.exports = class RESTroute extends EventEmitter {
 		// Register args:
 		this.params = routeParams;
 		this.server = server;
-		this._events = events;
 		this.libs = libs;
+		this._events = events;
 		this._raven = raven;
+		this._name = name;
 
 		// Log for each new route:
 		this.debug('Route Created!');
