@@ -1,53 +1,40 @@
-
-'use strict';
-
-
-const DSN = process.env.DSN || '';
-
-// Sentry Error Reporting:
-var raven = require('raven');
-var client = new raven.Client( DSN );
-client.setTagsContext({ ENV: process.env.ENVIRONMENT || "localhost" });
-client.patchGlobal();
-
-
-// Default variables:
-const PORT = process.env.PORT || 8080;
+'use strict'
 
 
 // Require Modules:
-var restify = require('restify');
-var lodash = require('lodash');
-var debug = require('debug')('restify-loader');
-var CookieParser = require('restify-cookies');
-var requireDir = require('require-dir');
-var path = require('path');
-const EventEmitter = require('events');
+let restify = require('restify')
+let lodash = require('lodash')
+let debug = require('debug')('restify-loader')
+console.log = debug
+let CookieParser = require('restify-cookies')
+let requireDir = require('require-dir')
+let path = require('path')
+const EventEmitter = require('events')
 class _AppEmitter extends EventEmitter {}
-const AppEmitter = new _AppEmitter();
+const AppEmitter = new _AppEmitter()
 
-
-console.log('dirname', __dirname);
 
 module.exports = function( options = {} ){
 
+	console.log('options', options)
+
 	// Load routes:
-	var Routes = requireDir('./routes/');
+	let Routes = requireDir( path.resolve( options.dir, './routes/' ) )
+	let Libs = requireDir( path.resolve( options.dir, './libs/' ) )
 
 
 	// Create REST API:
-	var server = restify.createServer({
+	let server = restify.createServer({
 		name: options.name || 'rest-api',
 		version: options.version || '1.0.0',
-	});
-
+	})
 
 
 	// Setup Server
 	server.use(restify.acceptParser(server.acceptable));
 	server.pre(restify.CORS({
 		credentials: true
-	}));
+	}))
 	server.pre(restify.fullResponse());
 	server.use(restify.dateParser());
 	server.use(restify.queryParser());
@@ -65,69 +52,70 @@ module.exports = function( options = {} ){
 				burst: 0
 			}
 		}
-	}));
+	}))
 
 
+	// Sentry Error Reporting:
+	let ravenClient = null;
+	if( options.raven ){
 
-	// Error reporting to Sentry:
-	function sendErrorToSentry( level ){
-		return function(req, res, err){
-			client.captureException( err, {
-				level: level
-			});
-			return res.send( err );
+		console.log('enable sentry')
+		ravenClient = new require('raven').Client( options.raven.DSN )
+		ravenClient.setTagsContext( options.raven.context || { ENV: 'localhost' } )
+		ravenClient.patchGlobal()
+
+		// Error reporting to Sentry:
+		function sendErrorToSentry( level ){
+			return function(req, res, err){
+				ravenClient.captureException( err, {
+					level: level
+				});
+				return res.send( err )
+			}
 		}
+		server.on('uncaughtException', function(req, res, route, err){
+			ravenClient.captureException( err )
+		});
+		server.on('InternalServer', sendErrorToSentry('error'));
+		server.on('NotFound', sendErrorToSentry('warning'));
+		server.on('MethodNotAllowed', sendErrorToSentry('warning'));
+		server.on('VersionNotAllowed', sendErrorToSentry('error'));
+		server.on('UnsupportedMediaType', sendErrorToSentry('error'));
+		server.on('after', function(req, res, route, err){
+			if(err) ravenClient.captureException( err )
+		})
+
 	}
-	server.on('uncaughtException', function(req, res, route, err){
-		client.captureException( err );
-	});
-	server.on('InternalServer', sendErrorToSentry('error'));
-	server.on('NotFound', sendErrorToSentry('warning'));
-	server.on('MethodNotAllowed', sendErrorToSentry('warning'));
-	server.on('VersionNotAllowed', sendErrorToSentry('error'));
-	server.on('UnsupportedMediaType', sendErrorToSentry('error'));
-	server.on('after', function(req, res, route, err){
-		if(err) client.captureException( err );
-	});
 
 
-
-
-	// Allow Cookies to be send via client
+	// Allow Cookies to be sent via browser
 	server.use(function( req, res, next ){
-		res.header('Access-Control-Allow-Credentials', true);
-		next();
+		res.header('Access-Control-Allow-Credentials', true)
+		next()
 	});
-
 
 
 	// For load balancer health checks
 	server.get( '/ping', function( req, res, next ){
-		res.send( 200 );
+		res.send( 200 )
 	});
-
 
 
 	// Register all the routes:
 	server.LoadedRoutes = {};
 	lodash.map( Routes, function( route, name ){
-		debug('Registering Route:', name);
-		server.LoadedRoutes[ name ] = new route( server, AppEmitter );
+		debug(`Registering Route: ${name}`)
+		server.LoadedRoutes[ name ] = new route( name, server, AppEmitter, ravenClient, Libs )
 	});
-
 
 
 	// Serve up docs
 	server.get(/\/specs\/?.*/, restify.serveStatic({
-		directory: path.resolve( __dirname, '../' )
+		directory: path.resolve( options.dir )
 	}));
 
 
-
-	// Listen for connections:
-	server.listen(PORT, function(){
-		debug('Listening to port', PORT);
-	});
+	return server;
 
 
 }
