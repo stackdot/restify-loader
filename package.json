@@ -20,7 +20,7 @@
     "debug": "^2.2.0",
     "lodash": "^4.11.1",
     "node-restify-validation": "^1.0.5",
-    "raven": "^0.11.0",
+    "raven": "^0.12.0",
     "require-dir": "^0.3.0",
     "restify": "^4.0.4",
     "restify-cookies": "^0.2.0"
