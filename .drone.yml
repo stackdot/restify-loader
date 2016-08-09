@@ -11,7 +11,7 @@ publish:
     username: $$NPM_USERNAME
     password: $$NPM_PASSWORD
     email: $$NPM_EMAIL
-    registry: https://registry.npmjs.org/
+    registry: https://registry.npmjs.org
     always_auth: true
 
 
