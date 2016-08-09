@@ -15,3 +15,6 @@ publish:
     always_auth: true
 
 
+cache:
+  mount:
+    - node_modules
