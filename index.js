@@ -12,7 +12,6 @@ let requireDir = require('require-dir')
 let path = require('path')
 const EventEmitter = require('events')
 class _AppEmitter extends EventEmitter {}
-const AppEmitter = new _AppEmitter()
 
 
 module.exports = function( options = {}, routeParams = {} ){
@@ -64,27 +63,33 @@ module.exports = function( options = {}, routeParams = {} ){
 		}
 	}))
 
+	// Attach to server for easy reference outside:
+	server._events = new _AppEmitter()
+	server._dirs = dirs
+	server._options = options
+	server._routeParams = routeParams
+
 
 	// Sentry Error Reporting:
-	let ravenClient = null
+	server._raven = null
 	if( options.raven ){
 
 		debug('Sentry [Enabled]')
-		ravenClient = new require('raven').Client( options.raven.DSN )
-		ravenClient.setTagsContext( options.raven.context || { ENV: 'localhost' } )
-		ravenClient.patchGlobal()
+		server._raven = new require('raven').Client( options.raven.DSN )
+		server._raven.setTagsContext( options.raven.context || { ENV: 'localhost' } )
+		server._raven.patchGlobal()
 
 		// Error reporting to Sentry:
 		function sendErrorToSentry( level ){
 			return function(req, res, err){
-				ravenClient.captureException( err, {
+				server._raven.captureException( err, {
 					level: level
 				})
 				return res.send( err )
 			}
 		}
 		server.on('uncaughtException', (req, res, route, err) => {
-			ravenClient.captureException( err )
+			server._raven.captureException( err )
 		})
 		server.on('InternalServer', sendErrorToSentry('error'))
 		server.on('NotFound', sendErrorToSentry('warning'))
@@ -92,7 +97,7 @@ module.exports = function( options = {}, routeParams = {} ){
 		server.on('VersionNotAllowed', sendErrorToSentry('error'))
 		server.on('UnsupportedMediaType', sendErrorToSentry('error'))
 		server.on('after', (req, res, route, err) => {
-			if(err) ravenClient.captureException( err )
+			if(err) server._raven.captureException( err )
 		})
 
 	}
@@ -115,7 +120,7 @@ module.exports = function( options = {}, routeParams = {} ){
 	server.LoadedRoutes = {}
 	lodash.map( Routes, ( route, name ) => {
 		debug(`Registering Route: ${name}`)
-		server.LoadedRoutes[ name ] = new route( name, server, AppEmitter, ravenClient, dirs, routeParams )
+		server.LoadedRoutes[ name ] = new route( name, server )
 	})
 
 
