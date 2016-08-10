@@ -1,22 +1,37 @@
 'use strict'
 
 
+
 // Require Modules:
-let restify = require('restify')
-let lodash = require('lodash')
-let debug = require('debug')('restify-loader')
-// console.log = debug
-let CookieParser = require('restify-cookies')
-let restifyValidation = require('node-restify-validation')
-let requireDir = require('require-dir')
-let path = require('path')
+const colors = require('colors')
+const restify = require('restify')
+const lodash = require('lodash')
+const CookieParser = require('restify-cookies')
+const restifyValidation = require('node-restify-validation')
+const requireDir = require('require-dir')
+const path = require('path')
 const EventEmitter = require('events')
 class _AppEmitter extends EventEmitter {}
 
 
+
+// Set custom Colors theme:
+colors.setTheme({
+	verbose: 'gray',
+	info: 'gray',
+	warn: ['bgYellow', 'black'],
+	good: 'green',
+	debug: 'cyan',
+	error: ['bgRed', 'white']
+})
+
+
+
+// Export the Main Class:
 module.exports = function( options = {}, routeParams = {} ){
 
-	debug('Loader Options:', options)
+	const debug = require('debug')(`${options.name}:rl`)
+	debug('Loader Options:'.info, JSON.stringify(options, null, 4).info )
 
 	// Load routes:
 	// Always load routes:
@@ -24,7 +39,7 @@ module.exports = function( options = {}, routeParams = {} ){
 	// Additional defined dirs to load in:
 	let dirs = {}
 	lodash.each(options.dirs, ( value, dir ) => {
-		debug(`Loading Directory: ${dir}`)
+		debug( `Loading Directory: ${dir}`.info )
 		dirs[dir] = requireDir( path.resolve( options.dir, value ) )
 	})
 
@@ -74,7 +89,7 @@ module.exports = function( options = {}, routeParams = {} ){
 	server._raven = null
 	if( options.raven ){
 
-		debug('Sentry [Enabled]')
+		debug('Sentry [Enabled]'.good)
 		server._raven = new require('raven').Client( options.raven.DSN )
 		server._raven.setTagsContext( options.raven.context || { ENV: 'localhost' } )
 		server._raven.patchGlobal()
@@ -82,6 +97,7 @@ module.exports = function( options = {}, routeParams = {} ){
 		// Error reporting to Sentry:
 		function sendErrorToSentry( level ){
 			return function(req, res, err){
+				console.log('ERROR'.error, err)
 				server._raven.captureException( err, {
 					level: level
 				})
@@ -119,7 +135,7 @@ module.exports = function( options = {}, routeParams = {} ){
 	// Register all the routes:
 	server.LoadedRoutes = {}
 	lodash.map( Routes, ( route, name ) => {
-		debug(`Registering Route: ${name}`)
+		debug(`Registering Route: ${name}`.info)
 		server.LoadedRoutes[ name ] = new route( name, server )
 	})
 
@@ -134,3 +150,4 @@ module.exports = function( options = {}, routeParams = {} ){
 
 
 }
+

@@ -13,7 +13,7 @@ module.exports = class RESTroute extends EventEmitter {
 		let self = this
 
 		// Setup debugging:
-		this.debug = require('debug')( `restify-${name}` )
+		this.debug = require('debug')( `${server._options.name}:route:${name}` )
 
 		// Register args:
 		this.server = server
@@ -32,7 +32,7 @@ module.exports = class RESTroute extends EventEmitter {
 		})
 
 		// Log for each new route:
-		this.debug('Route Created!')
+		this.debug('Route Created!'.good)
 
 		// Kick off init:
 		this.init()
@@ -41,7 +41,7 @@ module.exports = class RESTroute extends EventEmitter {
 
 	// This should be overwritten:
 	init(){
-		this.debug('Route Initialized ( Your route class should overwrite this init function )')
+		this.debug( 'Route Initialized ( Your route class should overwrite this init function )'.warn )
 	}
 
 }
