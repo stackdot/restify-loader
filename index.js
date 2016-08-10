@@ -7,6 +7,7 @@ let lodash = require('lodash')
 let debug = require('debug')('restify-loader')
 console.log = debug
 let CookieParser = require('restify-cookies')
+let restifyValidation = require('node-restify-validation')
 let requireDir = require('require-dir')
 let path = require('path')
 const EventEmitter = require('events')
@@ -38,6 +39,9 @@ module.exports = function( options = {}, routeParams = {} ){
 	server.pre(restify.fullResponse());
 	server.use(restify.dateParser());
 	server.use(restify.queryParser());
+	server.use(restifyValidation.validationPlugin({
+		errorHandler: restify.errors.InvalidArgumentError	
+	}))
 	server.use(restify.jsonp());
 	server.use(restify.gzipResponse());
 	server.use(restify.bodyParser({ mapParams: true }));
