@@ -5,7 +5,7 @@
 let restify = require('restify')
 let lodash = require('lodash')
 let debug = require('debug')('restify-loader')
-console.log = debug
+// console.log = debug
 let CookieParser = require('restify-cookies')
 let restifyValidation = require('node-restify-validation')
 let requireDir = require('require-dir')
@@ -17,7 +17,7 @@ const AppEmitter = new _AppEmitter()
 
 module.exports = function( options = {}, routeParams = {} ){
 
-	console.log('options', options)
+	debug('Loader Options:', options)
 
 	// Load routes:
 	// Always load routes:
@@ -25,7 +25,7 @@ module.exports = function( options = {}, routeParams = {} ){
 	// Additional defined dirs to load in:
 	let dirs = {}
 	lodash.each(options.dirs, ( value, dir ) => {
-		console.log(`Loading Directory: ${dir}`)
+		debug(`Loading Directory: ${dir}`)
 		dirs[dir] = requireDir( path.resolve( options.dir, value ) )
 	})
 
@@ -69,7 +69,7 @@ module.exports = function( options = {}, routeParams = {} ){
 	let ravenClient = null
 	if( options.raven ){
 
-		console.log('enable sentry')
+		debug('Sentry [Enabled]')
 		ravenClient = new require('raven').Client( options.raven.DSN )
 		ravenClient.setTagsContext( options.raven.context || { ENV: 'localhost' } )
 		ravenClient.patchGlobal()
