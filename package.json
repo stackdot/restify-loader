@@ -1,6 +1,6 @@
 {
   "name": "restify-loader",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "Load in Restify and Setup basic settings. ( Remove the restify Boilerplate ).",
   "main": "index.js",
   "scripts": {
@@ -10,8 +10,12 @@
     "type": "git",
     "url": "git+https://github.com/stackdot/restify-loader.git"
   },
-  "author": "",
+  "author": "Quinton Pike",
   "license": "ISC",
+  "engineStrict": true,
+  "engines": {
+    "node" : ">6.0.0"
+  },
   "bugs": {
     "url": "https://github.com/stackdot/restify-loader/issues"
   },
