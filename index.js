@@ -20,8 +20,14 @@ module.exports = function( options = {}, routeParams = {} ){
 	console.log('options', options)
 
 	// Load routes:
-	let Routes = requireDir( path.resolve( options.dir, './routes/' ) )
-	let Libs = requireDir( path.resolve( options.dir, './libs/' ) )
+	// Always load routes:
+	let Routes = requireDir( path.resolve( options.dir, 'routes' ) )
+	// Additional defined dirs to load in:
+	let dirs = {}
+	lodash.each(options.dirs, function( value, dir ){
+		console.log(`Loading Directory: ${dir}`)
+		dirs[dir] = requireDir( path.resolve( options.dir, value ) )
+	})
 
 
 	// Create REST API:
@@ -109,7 +115,7 @@ module.exports = function( options = {}, routeParams = {} ){
 	server.LoadedRoutes = {};
 	lodash.map( Routes, function( route, name ){
 		debug(`Registering Route: ${name}`)
-		server.LoadedRoutes[ name ] = new route( name, server, AppEmitter, ravenClient, Libs, routeParams )
+		server.LoadedRoutes[ name ] = new route( name, server, AppEmitter, ravenClient, dirs, routeParams )
 	});
 
 
