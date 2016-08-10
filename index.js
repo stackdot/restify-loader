@@ -39,12 +39,12 @@ module.exports = function( options = {}, routeParams = {} ){
 	server.pre(restify.fullResponse());
 	server.use(restify.dateParser());
 	server.use(restify.queryParser());
+	server.use(restify.bodyParser({ mapParams: true }));
 	server.use(restifyValidation.validationPlugin({
-		errorHandler: restify.errors.InvalidArgumentError	
+		errorsAsArray: true,
 	}))
 	server.use(restify.jsonp());
 	server.use(restify.gzipResponse());
-	server.use(restify.bodyParser({ mapParams: true }));
 	server.use(CookieParser.parse);
 	server.use(restify.throttle({
 		burst: 100,
@@ -115,7 +115,7 @@ module.exports = function( options = {}, routeParams = {} ){
 
 	// Serve up docs
 	server.get(/\/specs\/?.*/, restify.serveStatic({
-		directory: path.resolve( options.dir )
+		directory: path.resolve( options.dir, '../' )
 	}));
 
 
