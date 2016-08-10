@@ -24,7 +24,7 @@ module.exports = function( options = {}, routeParams = {} ){
 	let Routes = requireDir( path.resolve( options.dir, 'routes' ) )
 	// Additional defined dirs to load in:
 	let dirs = {}
-	lodash.each(options.dirs, function( value, dir ){
+	lodash.each(options.dirs, ( value, dir ) => {
 		console.log(`Loading Directory: ${dir}`)
 		dirs[dir] = requireDir( path.resolve( options.dir, value ) )
 	})
@@ -66,7 +66,7 @@ module.exports = function( options = {}, routeParams = {} ){
 
 
 	// Sentry Error Reporting:
-	let ravenClient = null;
+	let ravenClient = null
 	if( options.raven ){
 
 		console.log('enable sentry')
@@ -79,19 +79,19 @@ module.exports = function( options = {}, routeParams = {} ){
 			return function(req, res, err){
 				ravenClient.captureException( err, {
 					level: level
-				});
+				})
 				return res.send( err )
 			}
 		}
-		server.on('uncaughtException', function(req, res, route, err){
+		server.on('uncaughtException', (req, res, route, err) => {
 			ravenClient.captureException( err )
-		});
-		server.on('InternalServer', sendErrorToSentry('error'));
-		server.on('NotFound', sendErrorToSentry('warning'));
-		server.on('MethodNotAllowed', sendErrorToSentry('warning'));
-		server.on('VersionNotAllowed', sendErrorToSentry('error'));
-		server.on('UnsupportedMediaType', sendErrorToSentry('error'));
-		server.on('after', function(req, res, route, err){
+		})
+		server.on('InternalServer', sendErrorToSentry('error'))
+		server.on('NotFound', sendErrorToSentry('warning'))
+		server.on('MethodNotAllowed', sendErrorToSentry('warning'))
+		server.on('VersionNotAllowed', sendErrorToSentry('error'))
+		server.on('UnsupportedMediaType', sendErrorToSentry('error'))
+		server.on('after', (req, res, route, err) => {
 			if(err) ravenClient.captureException( err )
 		})
 
@@ -99,33 +99,33 @@ module.exports = function( options = {}, routeParams = {} ){
 
 
 	// Allow Cookies to be sent via browser
-	server.use(function( req, res, next ){
+	server.use(( req, res, next ) => {
 		res.header('Access-Control-Allow-Credentials', true)
 		next()
-	});
+	})
 
 
 	// For load balancer health checks
-	server.get( '/ping', function( req, res, next ){
+	server.get( '/ping', ( req, res, next ) => {
 		res.send( 200 )
-	});
+	})
 
 
 	// Register all the routes:
-	server.LoadedRoutes = {};
-	lodash.map( Routes, function( route, name ){
+	server.LoadedRoutes = {}
+	lodash.map( Routes, ( route, name ) => {
 		debug(`Registering Route: ${name}`)
 		server.LoadedRoutes[ name ] = new route( name, server, AppEmitter, ravenClient, dirs, routeParams )
-	});
+	})
 
 
 	// Serve up docs
 	server.get(/\/specs\/?.*/, restify.serveStatic({
 		directory: path.resolve( options.dir, '../' )
-	}));
+	}))
 
 
-	return server;
+	return server
 
 
 }

@@ -24,7 +24,7 @@ module.exports = class RESTroute extends EventEmitter {
 		this._name = name
 
 		// Register Directories as keys:
-		lodash.each(dirs, function( files, dir ){
+		lodash.each(dirs, ( files, dir ) => {
 			// Make sure we arent overwritting something:
 			if(!lodash.isEmpty( self[dir] ))
 				throw Error(`Key '${dir}' is already on this classes object. Please try using a different directory name/key`)
