@@ -12,7 +12,7 @@ publish:
     password: $$NPM_PASSWORD
     email: $$NPM_EMAIL
     registry: https://registry.npmjs.org
-    always_auth: true
+    always_auth: false
 
 
 cache:
