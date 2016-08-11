@@ -27,7 +27,7 @@ Usage
 // REST API Server:
 let server = require('restify-loader')({
 	dir: __dirname,
-	name: 'cuid',
+	name: 'fresca',
 	version: '1.0.0',
 	dirs: {
 		libs: 'libraries',
