@@ -1,20 +1,11 @@
-build:
-  image: node:6.3.1
-  pull: true
-  commands:
-    - npm update
-#    - npm test
+
+pipeline:
+  compile:
+    image: docker.stackdot.com/lib/node:6.3.1
+    commands:
+      - npm update
 
 
-publish:
   npm:
-    username: $$NPM_USERNAME
-    password: $$NPM_PASSWORD
-    email: $$NPM_EMAIL
-    registry: https://registry.npmjs.org
-    always_auth: false
+    image: plugins/npm
 
-
-cache:
-  mount:
-    - node_modules
