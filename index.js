@@ -27,6 +27,9 @@ colors.setTheme({
 })
 
 
+// Add more params to CORS:
+restify.CORS.ALLOW_HEADERS.push('key')
+restify.CORS.ALLOW_HEADERS.push('token')
 
 
 // Export the Main Class:
