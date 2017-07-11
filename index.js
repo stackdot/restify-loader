@@ -121,17 +121,18 @@ function setupServer( options = {}, routeParams = {}, RAVEN = null, debug ){
 	server.use(restify.jsonp())
 	server.use(restify.gzipResponse())
 	server.use(CookieParser.parse)
-	server.use(restify.throttle({
-		burst: 100,
-		rate: 50,
-		ip: true,
-		overrides: {
-			'127.0.0.1': {
-				rate: 0,
-				burst: 0
-			}
-		}
-	}))
+	// server.use(restify.throttle({
+	// 	burst: 100,
+	// 	rate: 50,
+	// 	ip: true,
+	// 	overrides: {
+	// 		'127.0.0.1': {
+	// 			rate: 0,
+	// 			burst: 0
+	// 		}
+	// 	}
+	// }))
+
 
 	// Attach to server for easy reference outside:
 	server._events = new _AppEmitter()
