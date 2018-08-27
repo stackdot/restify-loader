@@ -1,6 +1,6 @@
 {
   "name": "restify-loader",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "Load in Restify and Setup basic settings. ( Remove the restify Boilerplate ).",
   "main": "index.js",
   "scripts": {
@@ -29,6 +29,7 @@
     "raven": "^1.1.1",
     "require-dir": "^0.3.0",
     "restify": "^4.0.4",
-    "restify-cookies": "^0.2.0"
+    "restify-cookies": "^0.2.0",
+    "restify-cors-middleware": "^1.1.1"
   }
 }

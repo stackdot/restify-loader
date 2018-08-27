@@ -13,7 +13,7 @@ const requireDir = require('require-dir')
 const path = require('path')
 const EventEmitter = require('events')
 class _AppEmitter extends EventEmitter {}
-
+const corsMiddleware = require('restify-cors-middleware')
 
 
 // Set custom Colors theme:
@@ -102,13 +102,13 @@ function setupServer( options = {}, routeParams = {}, RAVEN = null, debug ){
 	// Create REST API:
 	let server = restify.createServer({
 		name: options.name || 'rest-api',
-		version: options.version || '1.0.0',
+		version: options.version || '2.0.4',
 	})
 
 
 	// Setup Server
 	server.use(restify.acceptParser(server.acceptable))
-	server.pre(restify.CORS({
+	server.pre(restify.CORS(options.cors || {
 		credentials: true
 	}))
 	server.pre(restify.fullResponse())
@@ -160,6 +160,10 @@ function setupServer( options = {}, routeParams = {}, RAVEN = null, debug ){
 		server.LoadedRoutes[ name ] = new route( name, server )
 	})
 
+	// Run an init script after all routes have been created:
+	lodash.each( server.LoadedRoutes, ( route ) => {
+		if( route.postInit ) route.postInit()
+	})
 
 	// Serve up docs
 	server.get(/\/specs\/?.*/, restify.serveStatic({
