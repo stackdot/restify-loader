@@ -13,7 +13,7 @@ const requireDir = require('require-dir')
 const path = require('path')
 const EventEmitter = require('events')
 class _AppEmitter extends EventEmitter {}
-const corsMiddleware = require('restify-cors-middleware')
+// const corsMiddleware = require('restify-cors-middleware')
 
 
 // Set custom Colors theme:
@@ -25,11 +25,6 @@ colors.setTheme({
 	debug: 'cyan',
 	error: ['bgRed', 'white']
 })
-
-
-// Add more params to CORS:
-restify.CORS.ALLOW_HEADERS.push('key')
-restify.CORS.ALLOW_HEADERS.push('token')
 
 
 // Export the Main Class:
@@ -108,10 +103,14 @@ function setupServer( options = {}, routeParams = {}, RAVEN = null, debug ){
 
 	// Setup Server
 	server.use(restify.acceptParser(server.acceptable))
-	server.pre(restify.CORS(options.cors || {
-		credentials: true
-	}))
-	server.pre(restify.fullResponse())
+	if( options.cors ){
+		console.log('Adding CORS options')
+		server.pre(restify.CORS(options.cors || {
+			credentials: true,
+			// origins: ['*'],
+		}))
+	}
+	// server.pre(restify.fullResponse())
 	server.use(restify.dateParser())
 	server.use(restify.queryParser())
 	server.use(restify.bodyParser({ mapParams: true }))
@@ -141,10 +140,13 @@ function setupServer( options = {}, routeParams = {}, RAVEN = null, debug ){
 	server._routeParams = routeParams
 
 	// Allow Cookies to be sent via browser
-	server.use(( req, res, next ) => {
-		res.header('Access-Control-Allow-Credentials', true)
-		next()
-	})
+	if( options.cors ){
+		server.use(( req, res, next ) => {
+			res.header('Access-Control-Allow-Credentials', true)
+			res.header('Access-Control-Allow-Origin', '*')
+			next()
+		})
+	}
 
 
 	// For load balancer health checks
